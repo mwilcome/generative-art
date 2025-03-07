@@ -24,4 +24,5 @@ This project serves as an educational tool to help users understand atomic struc
 
 ## Credits
 - p5.js library
-- Periodic table data sourced from [source, if applicable]
+- Periodic table data sourced from Grok
+- Mathematical modeling done by Grok (xAI)
