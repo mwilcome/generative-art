@@ -1,14 +1,14 @@
-let neutronInput, protonInput;
+let neutronInput, protonInput, electronInput;
 let neutronPositions = [];
 let protonPositions = [];
-const particleRadius = 10;
+const particleRadius = 20; // Size of neutron/proton spheres
 
 function setup() {
     createCanvas(800, 600, WEBGL);
     background(0);
     orbitControl();
 
-    // Input fields
+    // Input fields for neutrons, protons, and electrons
     neutronInput = createInput('6');
     neutronInput.position(10, 10);
     createP('Neutrons').position(100, 10);
@@ -17,7 +17,11 @@ function setup() {
     protonInput.position(10, 40);
     createP('Protons').position(100, 40);
 
-    // Add event listeners for real-time updates
+    electronInput = createInput('4');
+    electronInput.position(10, 70);
+    createP('Electrons').position(100, 70);
+
+    // Update positions when inputs change
     neutronInput.input(regeneratePositions);
     protonInput.input(regeneratePositions);
 
@@ -29,11 +33,11 @@ function draw() {
     ambientLight(100);
     pointLight(255, 255, 255, 0, 0, 300);
 
-    // Start transformation for spinning
+    // Spin the entire model
     push();
-    rotateY(frameCount * 0.01); // Rotate around Y-axis based on frameCount
+    rotateY(frameCount * 0.01);
 
-    // Draw neutrons (red)
+    // Draw neutrons (red spheres)
     for (let pos of neutronPositions) {
         push();
         translate(pos.x, pos.y, pos.z);
@@ -43,7 +47,7 @@ function draw() {
         pop();
     }
 
-    // Draw protons (blue)
+    // Draw protons (blue spheres)
     for (let pos of protonPositions) {
         push();
         translate(pos.x, pos.y, pos.z);
@@ -53,7 +57,32 @@ function draw() {
         pop();
     }
 
-    // End transformation for spinning
+    // Draw electrons as partial noodle-shaped arcs
+    const electronCount = parseInt(electronInput.value()) || 0;
+    const arcFraction = 0.7; // 70% of a full circle
+    const arcAngle = TWO_PI * arcFraction; // Approximately 252 degrees in radians
+    const radius = 100; // Distance from nucleus
+    const speed = 0.02; // Animation speed
+
+    for (let i = 0; i < electronCount; i++) {
+        push();
+        rotateX(i * PI / electronCount); // Unique tilt for each electron's plane
+        let startAngle = frameCount * speed + i * TWO_PI / electronCount;
+        let endAngle = startAngle + arcAngle;
+
+        stroke(255, 255, 0, 100); // Semi-transparent yellow for visibility
+        strokeWeight(3); // Thin noodle effect
+        noFill();
+        beginShape();
+        for (let angle = startAngle; angle < endAngle; angle += 0.1) {
+            let x = radius * cos(angle);
+            let y = radius * sin(angle);
+            vertex(x, y, 0);
+        }
+        endShape();
+        pop();
+    }
+
     pop();
 }
 
@@ -68,7 +97,6 @@ function generateParticlePositions(neutronCount, protonCount) {
     protonPositions = [];
     let allPositions = [];
 
-    // Generate all particle positions
     let totalParticles = neutronCount + protonCount;
     if (totalParticles > 0) {
         allPositions.push(createVector(0, 0, 0)); // First particle at origin
@@ -77,6 +105,7 @@ function generateParticlePositions(neutronCount, protonCount) {
     let attempts = 0;
     const maxAttempts = 1000;
 
+    // Generate positions for all particles
     while (allPositions.length < totalParticles && attempts < maxAttempts) {
         let basePos = random(allPositions);
         let theta = random(0, TWO_PI);
